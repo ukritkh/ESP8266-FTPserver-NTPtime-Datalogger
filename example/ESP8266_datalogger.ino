@@ -1,5 +1,3 @@
-// esp8266 core http://arduino.esp8266.com/stable/package_esp8266com_index.json  
-// attiny85 core https://raw.githubusercontent.com/damellis/attiny/ide-1.6.x-boards-manager/package_damellis_attiny_index.json
 #include <SPI.h>
 #include <SD.h>
 #include "SdList.h"
