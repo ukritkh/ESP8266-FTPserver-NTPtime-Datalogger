@@ -175,9 +175,9 @@ void FTP_WiFiConfig(){
   setRTC();
   
   ftpSrv.init();
-  const unsigned long ftp_time = 1*60*3*100000; //3*60*3*100000 = 4.30 min timeout for the knob turn in thousandths of a second (60*1000 = 10 mins)
+  const unsigned long ftp_time_out = 1*60*3*100000; //3*60*3*100000 = 4.30 min timeout for the knob turn in thousandths of a second (60*1000 = 10 mins)
   unsigned long ftp_start_time = 0; //used for the count down timer
-  while(ftp_start_time<=ftp_time){
+  while(ftp_start_time<=ftp_time_out){
     ftpSrv.service();ftp_start_time++; 
   }  
    
