@@ -87,63 +87,99 @@ void callback(const MQTT::Publish& pub) {
   if(pub.payload_string().equals("rtc set"))
   {
     setRTC();
-    webString = "RTC Set. Time: ";webString += getTime();client.publish("outTopic",webString);// send to someones browser when asked
-    } else if(pub.payload_string().equals("rtc get"))
-  { webString = "Time: ";webString += getTime();client.publish("outTopic",webString);               // send to someones browser when asked
-  } else{}
-    Serial.print(pub.topic()); Serial.print(" => ");Serial.println(pub.payload_string());
+    webString = "RTC Set. Time: ";
+    webString += getTime();
+    client.publish("outTopic",webString);// send to someones browser when asked
+    } 
+  else if(pub.payload_string().equals("rtc get"))
+  { 
+    webString = "Time: ";
+    webString += getTime();
+    client.publish("outTopic",webString);               // send to someones browser when asked
+  }   
+    Serial.print(pub.topic()); 
+    Serial.print(" => ");
+    Serial.println(pub.payload_string());
 }
 
 void configModeCallback (WiFiManager *myWiFiManager) {
-  WiFiManager wifiManager;Serial.println("Entered config mode");Serial.println(WiFi.softAPIP()); 
+  WiFiManager wifiManager;
+  Serial.println("Entered config mode");
+  Serial.println(WiFi.softAPIP()); 
   // need to reset every time if you cant find to prevent error
   wifiManager.resetSettings(); 
   //if you used auto generated SSID, print it
   Serial.println(myWiFiManager->getConfigPortalSSID());
 }
 void FTP_WiFiConfig(){
-   batteryMonitor.reset();batteryMonitor.quickStart();delay(100);
+   batteryMonitor.reset();
+  batteryMonitor.quickStart();
+  delay(100);
     
-    WiFi.forceSleepWake();WiFi.mode(WIFI_STA); 
+  WiFi.forceSleepWake();
+  WiFi.mode(WIFI_STA); 
   
   //===== WiFiManager ======//
-  WiFiManager wifiManager;wifiManager.setAPCallback(configModeCallback);wifiManager.setMinimumSignalQuality();wifiManager.setConfigPortalTimeout(110);
+  WiFiManager wifiManager;
+  wifiManager.setAPCallback(configModeCallback);
+  wifiManager.setMinimumSignalQuality();
+  wifiManager.setConfigPortalTimeout(110);
  
   //===== AP name & Password
-  if(!wifiManager.autoConnect("ESP8266", "1234567890")) {Serial.println("failed to connect and hit timeout");stopWiFiAndSleep();} 
+  if(!wifiManager.autoConnect("ESP8266", "1234567890")) {
+    Serial.println("failed to connect and hit timeout");
+    stopWiFiAndSleep();
+  } 
   
   //====IP Address===//
-  Serial.print("IP address: ");Serial.println(WiFi.localIP());
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
    
   //---- set rtc time first ----///  
   udp.begin(localPort);
-  RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);  printDateTime(compiled); Serial.println();
+  RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);  
+  printDateTime(compiled); Serial.println();
 
   if (!Rtc.IsDateTimeValid())
-  { Serial.println("RTC lost confidence in the DateTime!");Rtc.SetDateTime(compiled);}
+  { 
+   Serial.println("RTC lost confidence in the DateTime!");
+   Rtc.SetDateTime(compiled);
+  }
 
   RtcDateTime now = Rtc.GetDateTime();
   
   if (now < compiled)
-  {Serial.println("RTC is older than compile time!  (Updating DateTime)");Rtc.SetDateTime(compiled);}
+  {
+    Serial.println("RTC is older than compile time!  (Updating DateTime)");
+    Rtc.SetDateTime(compiled);
+  }
  
   else if (now > compiled)
-  {Serial.println("RTC is newer than compile time. (this is expected)");}
+  {
+    Serial.println("RTC is newer than compile time. (this is expected)");
+  }
   
   else if (now == compiled)
-  {Serial.println("RTC is the same as compile time! (not expected but all is fine)");}
+  {
+    Serial.println("RTC is the same as compile time! (not expected but all is fine)");
+  }
 
     Rtc.Enable32kHzPin(false);
     Rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone);
     client.set_callback(callback); 
   
-  if (client.connect("arduinoClient")) { client.publish("outTopic","rtc boot up"); client.subscribe("inTopic"); }  
+  if (client.connect("arduinoClient")) { 
+    client.publish("outTopic","rtc boot up"); 
+    client.subscribe("inTopic"); 
+  }  
   setRTC();
   
   ftpSrv.init();
   const unsigned long ftp_time = 1*60*3*100000; //3*60*3*100000 = 4.30 min timeout for the knob turn in thousandths of a second (60*1000 = 10 mins)
   unsigned long ftp_start_time = 0; //used for the count down timer
-  while(ftp_start_time<=ftp_time){ftpSrv.service();ftp_start_time++; }  
+  while(ftp_start_time<=ftp_time){
+    ftpSrv.service();ftp_start_time++; 
+  }  
    
 }
 void setup()
@@ -160,8 +196,13 @@ void setup()
   sensors.begin();
 
    pinMode(15, OUTPUT);
-   if (!SD.begin(chipSelect)){Serial.println("Card failed, or not present");return;}
-   if(sdl.begin(15) == 0){Serial.println(("SD init fail"));}  
+   if (!SD.begin(chipSelect)){
+        Serial.println("Card failed, or not present");
+        return;
+   }
+   if(sdl.begin(15) == 0){
+     Serial.println(("SD init fail"));
+   }  
 
    // Create a file and header
    if(! SD.exists(fileName)){
@@ -175,7 +216,9 @@ void setup()
   while(digitalRead(TRIGGER_SLEEP_PIN) ==  LOW) {
     if(! SD.exists(fileName)){
     file = SD.open(fileName, FILE_WRITE);
-    if(file){file.println(", , ,"); file.println("Water Height (cm), Water Temperature (C), Date, Time");file.close();}
+    if(file){file.println(", , ,"); 
+      file.println("Water Height (cm), Water Temperature (C), Date, Time");
+      file.close();}
       FTP_WiFiConfig();
    }else{ FTP_WiFiConfig();}
   }
@@ -220,17 +263,27 @@ void loop()
   stopWiFiAndSleep();
 }
 void stopWiFi() {
-    WiFi.mode(WIFI_OFF); WiFi.forceSleepBegin();delay(1);
+    WiFi.mode(WIFI_OFF); 
+    WiFi.forceSleepBegin();
+    delay(1);
 }
 void stopWiFiAndSleep() {// Sleep for 10 seconds
-    WiFi.mode(WIFI_OFF);WiFi.forceSleepBegin();delay(1); ESP.deepSleep(10*1000000, WAKE_RF_DEFAULT); delay(100);
+    WiFi.mode(WIFI_OFF);
+    WiFi.forceSleepBegin();
+    delay(1); 
+    ESP.deepSleep(10*1000000, WAKE_RF_DEFAULT); 
+    delay(100);
 }
 
 
 String getTime()
 {
   if (!Rtc.IsDateTimeValid())
-  {return "RTC lost confidence in the DateTime!";}RtcDateTime now = Rtc.GetDateTime();return returnDateTime(now);
+  {
+    return "RTC lost confidence in the DateTime!";
+  }
+  RtcDateTime now = Rtc.GetDateTime();
+  return returnDateTime(now);
 }
 void setRTC()
 {
@@ -260,7 +313,10 @@ void setRTC()
     t4 -= ((-13) * 3600L);     // Notice the L for long calculations!!
     t4 += 1;               // adjust the delay(1000) at begin of loop!
     if (f4 > 0.4) t4++;    // adjust fractional part, see above
-    Rtc.SetDateTime(t4);Serial.print("RTC after : "); printDateTime(Rtc.GetDateTime());Serial.println();
+    Rtc.SetDateTime(t4);
+    Serial.print("RTC after : "); 
+    printDateTime(Rtc.GetDateTime());
+    Serial.println();
   }
 }
 
@@ -276,5 +332,7 @@ unsigned long sendNTPpacket(const char*)
   // 8 bytes of zero for Root Delay & Root Dispersion
   packetBuffer[12]  = 49;packetBuffer[13]  = 0x4E;packetBuffer[14]  = 49;packetBuffer[15]  = 52;
   //NTP requests are to port 123
-  udp.beginPacket(timeServer, 123); udp.write(packetBuffer, NTP_PACKET_SIZE);udp.endPacket();
+  udp.beginPacket(timeServer, 123); 
+  udp.write(packetBuffer, NTP_PACKET_SIZE);
+  udp.endPacket();
 }
